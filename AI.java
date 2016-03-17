@@ -74,7 +74,7 @@ public class AI {
         int n = 100;
         
         if(iterations>=100) {
-            n = 30;
+            n = 100;
         }
         
         Random r = new Random();
@@ -105,7 +105,7 @@ public class AI {
         if(line == null)
             return;
         
-        iterations = Integer.parseInt(line)<100?0:Integer.parseInt(line)-Integer.parseInt(line)%30;
+        iterations = Integer.parseInt(line)<100?0:Integer.parseInt(line)-Integer.parseInt(line)%100;
         //System.out.println(iterations);
     }
     
@@ -170,7 +170,7 @@ public class AI {
         }
         
         else if(iterations>100) {
-            if(iterations%30==0) {
+            if(iterations%100==0) {
                 computeStats();
             }
         }

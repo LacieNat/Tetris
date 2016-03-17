@@ -255,7 +255,7 @@ public class TempState {
 	
 	// extra functions
 	
-	public TempState(int[][] newField, int newNextPiece, int[] newTop, int newTurn) {
+	public TempState(int[][] newField, int newNextPiece, int[] newTop, int newTurn, int cleared) {
 		
 		// http://stackoverflow.com/questions/1564832/how-do-i-do-a-deep-copy-of-a-2d-array-in-java
 		// only way to do a deep copy is to iterate through the array and copy each element
@@ -268,6 +268,8 @@ public class TempState {
 		this.nextPiece = newNextPiece;
 		
 		this.turn = newTurn;
+                
+                this.cleared = cleared;
 		
 		for (int i = 0; i < newTop.length; i++){
 			this.top[i] = newTop[i];
