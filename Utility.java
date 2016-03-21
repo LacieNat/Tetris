@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import net.sourceforge.jswarm_pso.Swarm;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,8 +13,8 @@ import java.util.ArrayList;
  * @author lacie
  */
 public class Utility {
-    
-    public static double computeStrategy(TempState s, ArrayList<Double> weights, State st, int[] move) { 
+    public static int numOfWeights = 6;
+    public static double computeStrategy(TempState s, State st, int[] move) { 
 //        printField(s.getField());
 //        System.out.println(move[State.SLOT]);
         double featureSum = -4.500158825082766*findLandingHeight(st.getField(), move[State.SLOT], 
@@ -26,6 +27,17 @@ public class Utility {
                 -3.3855972247263626*wells(s.getField());
         
         return featureSum;
+    }
+    
+    public static double computeStrategyLearning(TempState t, State s, int[] move, double[] w) {
+        return  w[0]*findLandingHeight(s.getField(), move[State.SLOT], 
+                columnHeights(s.getField()),State.pHeight[s.nextPiece][move[State.ORIENT]],
+                State.pWidth[s.nextPiece][move[State.ORIENT]])
+                + w[1]* (t.getRowsCleared()-s.getRowsCleared())
+                + w[2]*rowTransitions(t.getField())
+                + w[3]*columnTransitions(t.getField())
+                + w[4]*numOfHoles(t.getField(), Utility.columnHeights(t.getField()))
+                + w[5]*wells(t.getField());
     }
     
     public static void printField(int[][] field) {
@@ -195,28 +207,5 @@ public class Utility {
         
         
         return col;
-    }
-    
-    public static int maxHeight(int[] col) {
-        int max = -1;
-        
-        for(int i=0; i<col.length; i++) {
-            if (col[i]>max) {
-                max = col[i];
-            }
-        }
-        
-        return max;
-    }
-    
-    public static int[] adjColDiff(int[] col) {
-        int diff[] = new int[9];
-        
-        for(int i=0; i<diff.length; i++) {
-            diff[i] = Math.abs(col[i+1]-col[i]);
-            //System.out.println("col diff" + i+ " height: " + col[i]);
-        }
-        
-        return diff;
     }
 }
