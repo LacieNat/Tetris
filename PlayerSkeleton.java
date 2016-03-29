@@ -1,10 +1,9 @@
 
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Handler;
+
 import net.sourceforge.jswarm_pso.Particle;
 import net.sourceforge.jswarm_pso.Swarm;
+import java.util.concurrent.*;
+import java.util.*;
 
 
 public class PlayerSkeleton {
@@ -31,8 +30,44 @@ public class PlayerSkeleton {
 
             return move;
 	}
+        
+        public static class StateCallable implements Callable<Void> {
+            private final Particle p;
+            private final double[] w;
+            private final PlayerSkeleton ps;
+            private final TetrisFitnessFunction tff;
+            private final int index;
+            
+            public StateCallable(PlayerSkeleton ps, Particle p, double[] w, TetrisFitnessFunction tff, int index) {
+                this.p = p;
+                this.w = w;
+                this.ps = ps;
+                this.tff = tff;
+                this.index = index;
+            }
+            
+            public Void call() throws Exception {
+                State s = new State();
+                while(!s.hasLost()) {
+
+                        s.makeMove(ps.pickMove(s,s.legalMoves(), w));
+//                                s.draw();
+//                                s.drawNext(0,0);
+//                                try {
+//                                        Thread.sleep(300);
+//                                } catch (InterruptedException e) {
+//                                        e.printStackTrace();
+//                                }
+//                            System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+
+                }
+                System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+                tff.set(index, s.getRowsCleared());
+                return null;
+            }
+        }
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 		State s = new State();
 		//TFrame t = new TFrame(s);
                 
@@ -47,37 +82,33 @@ public class PlayerSkeleton {
                 swarm.setParticleIncrement(0.9);
                
                 
-                int iter = 10000;
+                int iter = 50;
+                
+                //Parallel Setup
+                ExecutorService es = Executors.newFixedThreadPool(swarm.getParticles().length);
+                Set<Callable<Void>> callables = new HashSet<Callable<Void>>();
+                
                 for(int i=0; i<iter; i++) {
                    Particle[] particles = swarm.getParticles();
                    tff.setParticles(particles);
                    tff.clearHashMap();
-                  
+                   callables.clear();
+                   
                    for(int j=0; j<particles.length; j++) {
                        Particle currParticle = particles[j];
                        double[] currWeight = particles[j].getPosition();
-                        while(!s.hasLost()) {
-
-                                s.makeMove(p.pickMove(s,s.legalMoves(), currWeight));
-//                                s.draw();
-//                                s.drawNext(0,0);
-//                                try {
-//                                        Thread.sleep(300);
-//                                } catch (InterruptedException e) {
-//                                        e.printStackTrace();
-//                                }
-//                            System.out.println("You have completed "+s.getRowsCleared()+" rows.");
-
-                        }
-                        System.out.println("You have completed "+s.getRowsCleared()+" rows.");
-                        tff.set(j, s.getRowsCleared());
-                        s = new State();
+                       
+                       callables.add(new StateCallable(p, currParticle, currWeight, tff, j));
+                       
+                        
+                        //s = new State();
 //                        t.bindState(s);
                    }
-                   
+                   es.invokeAll(callables);
                    swarm.evolve();
                 }
-                System.out.println(swarm.toStringStats());            
+                System.out.println(swarm.toStringStats());  
+                es.shutdown();
 
 	}
 	
