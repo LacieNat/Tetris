@@ -1,7 +1,3 @@
-
-
-import net.sourceforge.jswarm_pso.Particle;
-import net.sourceforge.jswarm_pso.Swarm;
 import java.util.concurrent.*;
 import java.util.*;
 
@@ -20,9 +16,7 @@ public class PlayerSkeleton {
                     continue;
                 
                 double curr = Utility.computeStrategyLearning(ts, s, legalMoves[i], w);
-//                System.out.println("curr " + curr);
                 if(curr>eval) {
-//                    System.out.println("chaange move");
                     move = i;
                     eval = curr;
                 }

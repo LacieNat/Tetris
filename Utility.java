@@ -1,6 +1,5 @@
 
 import java.util.ArrayList;
-import net.sourceforge.jswarm_pso.Swarm;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

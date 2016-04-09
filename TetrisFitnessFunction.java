@@ -1,8 +1,6 @@
 
 import java.util.Arrays;
 import java.util.HashMap;
-import net.sourceforge.jswarm_pso.FitnessFunction;
-import net.sourceforge.jswarm_pso.Particle;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -51,7 +49,6 @@ public class TetrisFitnessFunction extends FitnessFunction {
         return index;
     }
     
-    @Override
     public double evaluate(double[] pos) {
         int index = findParticleIndexFromPosition(pos);
         
