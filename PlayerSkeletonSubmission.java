@@ -11,17 +11,19 @@ import java.util.Iterator;
 public class PlayerSkeletonSubmission {
 	private int linesCleared = 0;
 
-	// implement this function to have a working system
+	
 	public int pickMove(State s, int[][] legalMoves) {
 		int move = 0;
 		double eval = Integer.MIN_VALUE;
 		for (int i = 0; i < legalMoves.length; i++) {
 			TempState ts = new TempState(s.getField(), s.nextPiece, s.getTop(), s.getTurnNumber(), s.getRowsCleared());
 			ts.newMove(i);
-
+                        
+                        // if the move will cause game over, move on to next move
 			if (ts.hasLost())
 				continue;
-
+                        
+                        // compute utility of move and find move with max utility
 			double curr = Utility.computeStrategy(ts, s, legalMoves[i]);
 			if (curr > eval) {
 				move = i;
@@ -55,15 +57,16 @@ public class PlayerSkeletonSubmission {
 
 	/**
 	 *
-	 * @author lacie
+	 * This class contains the heuristics used and the functions needed to calculate utility
+         * for each move. The main six heuristics are landing height, rows cleared,
+         * row transitions, column transitions, num of holes, and the well sums.
+         * The learnt weights are then inserted to compute the utiltiy.
 	 */
 	public static class Utility {
 		public static int numOfWeights = 6;
-
+                
+                //function that computes with hardcoded weights
 		public static double computeStrategy(TempState s, State st, int[] move) {
-			// printField(s.getField());
-			// System.out.println(move[State.SLOT]);
-
 			double featureSum = -4.500158825082766
 					* findLandingHeight(st.getField(), move[State.SLOT], columnHeights(st.getField()),
 							State.pHeight[st.nextPiece][move[State.ORIENT]],
@@ -76,7 +79,8 @@ public class PlayerSkeletonSubmission {
 
 			return featureSum;
 		}
-
+                
+                //function that computes weights with learning 
 		public static double computeStrategyLearning(TempState t, State s, int[] move, double[] w) {
 			return w[0] * findLandingHeight(s.getField(), move[State.SLOT], columnHeights(s.getField()),
 					State.pHeight[s.nextPiece][move[State.ORIENT]], State.pWidth[s.nextPiece][move[State.ORIENT]])
@@ -84,7 +88,9 @@ public class PlayerSkeletonSubmission {
 					+ w[3] * columnTransitions(t.getField())
 					+ w[4] * numOfHoles(t.getField(), Utility.columnHeights(t.getField())) + w[5] * wells(t.getField());
 		}
-
+                
+                
+                //helper function - prints the current field
 		public static void printField(int[][] field) {
 			for (int i = field.length - 1; i >= 0; i--) {
 				System.out.println();
@@ -95,7 +101,8 @@ public class PlayerSkeletonSubmission {
 			System.out.println();
 			System.out.println();
 		}
-
+                
+                //function to calculate the number of holes
 		public static int numOfHoles(int[][] field, int[] colHeight) {
 			int holes = 0;
 
@@ -111,7 +118,8 @@ public class PlayerSkeletonSubmission {
 			}
 			return holes;
 		}
-
+                
+                //function to calculate the well sums
 		public static int wells(int[][] field) {
 			int wellSum = 0;
 			int test = 0;
@@ -183,7 +191,10 @@ public class PlayerSkeletonSubmission {
 			}
 			return test;
 		}
-
+                
+                /* function to calculate the landing height. find the max height where
+                 * the piece would land, add (piece height -1)/2
+                */
 		public static double findLandingHeight(int[][] field, int slot, int[] colHeight, int pHeight, int pWidth) {
 			int max = colHeight[slot];
 			for (int i = slot + 1; i < pWidth; i++) {
@@ -191,11 +202,14 @@ public class PlayerSkeletonSubmission {
 					max = colHeight[i];
 				}
 			}
-			// System.out.println(max);
-			// printField(field);
-			return (max + (pHeight / 2));
-		}
 
+			return (max + (pHeight -1/ 2));
+		}
+                
+                /* function to calculate row transitions
+                 * a row transition is counted when a full cell transit to an empty cell
+                 * or an empty cell transit to a full cell in the same row
+                 */
 		public static int rowTransitions(int[][] field) {
 			int tr = 0;
 
@@ -215,7 +229,11 @@ public class PlayerSkeletonSubmission {
 			}
 			return tr;
 		}
-
+                
+                /* function to calculate column transitions
+                 * a column transition is counted when a full cell transit to an empty cell
+                 * or an empty cell transit to a full cell in the same column
+                */
 		public static int columnTransitions(int[][] field) {
 			int tr = 0;
 			boolean isEmptyCell;
@@ -238,7 +256,8 @@ public class PlayerSkeletonSubmission {
 			return tr;
 
 		}
-
+                
+                //helper function that returns the column heights of each column
 		public static int[] columnHeights(int[][] field) {
 			int[] col = new int[10];
 			for (int i = 0; i < State.COLS; i++) {
@@ -252,7 +271,11 @@ public class PlayerSkeletonSubmission {
 			return col;
 		}
 	}
-
+        
+        /* This temp state class is a similar implementation to the State class 
+         * which helps to visulize a move with a particular piece without 
+         * actually playing the move 
+         */
 	public static class TempState {
 		public static final int COLS = 10;
 		public static final int ROWS = 21;
@@ -468,13 +491,12 @@ public class PlayerSkeletonSubmission {
 			return true;
 		}
 
-		// extra functions
-
+                
+                /* On Initialization, change local vars nextpiece, top, turn, and number of lines cleared
+                 * to respective arg inputs to simulate current state. 
+                */
 		public TempState(int[][] newField, int newNextPiece, int[] newTop, int newTurn, int cleared) {
 
-			// http://stackoverflow.com/questions/1564832/how-do-i-do-a-deep-copy-of-a-2d-array-in-java
-			// only way to do a deep copy is to iterate through the array and
-			// copy each element
 			for (int i = 0; i < newField.length; i++) {
 				for (int j = 0; j < newField[i].length; j++) {
 					this.field[i][j] = newField[i][j];
